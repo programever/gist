@@ -114,6 +114,27 @@ Monorepo systems in JavaScript are tools to manage JavaScript projects with mult
 
 Projects like Babel, React, Angular,Ember, Meteor, Jest, and many other open-source projects develop all of their packages within a single repository.
 
+# NodeJS
+
+Node.js is a JavaScript runtime environment.
+
+***Here is how PHP or ASP handles a file request:***
+Sends the task to the computer's file system.
+Waits while the file system opens and reads the file.
+Returns the content to the client.
+Ready to handle the next request.
+
+***Here is how Node.js handles a file request:***
+Sends the task to the computer's file system.
+Ready to handle the next request.
+When the file system has opened and read the file, the server returns the content to the client.
+
+# Web Application
+
+__Typical examples:__ ExpressJS, Fastify
+
+This frameworks designed to build API's web applications cross-platform mobile apps quickly and make NodeJS easy.
+
 # References:
 
 https://gist.github.com/joepie91/3381ce7f92dec7a1e622538980c0c43d
