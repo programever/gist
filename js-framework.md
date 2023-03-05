@@ -1,47 +1,47 @@
-***Angular***
+### Angular
 
 A front-end framework based on TypeScript. It is widely used to create Single Page Applications.
 
-***React***
+### React
 
 Another front-end framework. The biggest advantages of using React is that you can create web as well as mobile applications using the same codebase with a framework called React Native.
 
-***Vue***
+### Vue
 
 Another front-end framework. Vue focuses on beginner developers helping them create dynamic web applications without having to go through any prior tedious learning.
 
-***Ember.js***
+### Ember.js
 
 The old frameworks. Ember is excellent for developing complex apps partly because it is strictly organized.
 
-***Mithril***
+### Mithril
 
 A client-side framework is tiny and rapid
 
-***Svelte***
+### Svelte
 
 A new way of seeing code. https://svelte.dev/examples/hello-world
 
-***Aurelia***
+### Aurelia
 
 Another front-end framework
 
-***BackBone***
+### BackBone
 
 A front-end and back-end development. It supports REST APIs that are used to keep the front-end and back-end in sync
 
-***Meteor***
+### Meteor
 
 Allows you to develop JavaScript in all environments: application server, web browser, and mobile device.
 
-***Polymer***
+### Polymer
 
 A frontend technology by Google that provides a set of web components and tools for building web applications.
 
-***Next.js:***
+### Next.js:
 
 Full-stack web applications (including backend and frontend) - Server Side Rendering - Better for SEO.
 
-***Nest.js:***
+### Nest.js:
 
 A backend framework - 100% TypeScript.

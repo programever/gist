@@ -1,8 +1,8 @@
-**Remove mouse acceleration**
+### Remove mouse acceleration
 
 defaults write .GlobalPreferences com.apple.mouse.scaling -1
 
-**Make symbolic link**
+### Make symbolic link
 
 ln -s ~/Workspace/dotfiles/.zshrc ~/.zshrc
 
@@ -21,11 +21,11 @@ ln -s ~/Workspace/dotfiles/coc-settings.json ~/.config/nvim/coc-settings.json
 ln -s ~/Workspace/dotfiles/init.vim ~/.config/nvim/init.vim
 
 
-**Extract ssh in dropbox**
+### Extract ssh in dropbox
 
 mv ~/Dropbox/Documents/Migrating/.ssh ~/.ssh
 
-**Add ipv6 to /etc/hosts**
+### Add ipv6 to /etc/hosts
 
 127.0.0.1 localhost
 
@@ -34,37 +34,37 @@ mv ~/Dropbox/Documents/Migrating/.ssh ~/.ssh
 ::1 ip6-localhost
 
 
-**Install git from Xcode Terminal command line**
+### Install git from Xcode Terminal command line
 
 git config --global user.name Iker
 
 git config --global user.email tdtrinh.web@gmail.com
 
 
-**Brew**
+### Brew
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 brew services list
 
 
-**Install fira font**
+### Install fira font
 
 brew tap homebrew/cask-fonts
 
 brew install --cask font-fira-code
 
 
-**FNM**
+### FNM
 
 brew install fnm
 
 
-**ELM**
+### ELM
 
 npm install -g elm create-elm-app elm-test @elm-tooling/elm-language-server elm-format elm-oracle elm-review
 
-**Haskell**
+### Haskell
 
 Install ghcup ONLY, do not install the rest from https://www.haskell.org/ghcup/
 
@@ -73,21 +73,21 @@ cabal install ormolu hlint
 Use `ghcup tui` to install the rest
 
 
-**PureScript**
+### PureScript
 
 npm install -g purescript spago purescript-language-server purs-tidy
 
 brew install dhall-lsp-server
 
 
-**Bash**
+### Bash
 
 brew install bash shfmt shellcheck
 
 npm i -g bash-language-server
 
 
-**VIM**
+### VIM
 
 https://github.com/elm/compiler/tree/master/installers/mac
 
@@ -112,12 +112,12 @@ pip3 install --upgrade neovim
 Add Shift+Return to Send Hex Code: 0x1B
 
 
-**GRADLE**
+### GRADLE
 
 brew install gradle
 
 
-**Firebase**
+### Firebase
 
 npm install -g firebase-admin firebase-tools firebase-functions
 
@@ -126,7 +126,7 @@ firebase login
 firebase projects:list
 
 
-**Apache**
+### Apache
 
 sudo launchctl unload -w /System/Library/LaunchDaemons/org.apache.httpd.plist 2\>/dev/null
 
@@ -137,14 +137,14 @@ brew services start httpd
 Config path /usr/local/etc/httpd/httpd.conf
 
 
-**PHP**
+### PHP
 
 brew install php
 
 MAY NEED TO RUN brew reinstall openssl
 
 
-**MySQL**
+### MySQL
 
 brew install mysql
 
@@ -155,7 +155,7 @@ Setup root user use password 123123
 mysql\_secure\_installation
 
 
-**RVM**
+### RVM
 
 echo "gem: --no-document" \>\> ~/.gemrc
 
