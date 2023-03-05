@@ -38,10 +38,14 @@ Allows you to develop JavaScript in all environments: application server, web br
 
 A frontend technology by Google that provides a set of web components and tools for building web applications.
 
-### Next.js:
+### Next.js
 
 Full-stack web applications (including backend and frontend) - Server Side Rendering - Better for SEO.
 
-### Nest.js:
+### Nest.js
 
 A backend framework - 100% TypeScript.
+
+### RXjs
+
+A library for composing asynchronous and event-based programs by using observable sequences.
