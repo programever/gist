@@ -36,12 +36,6 @@ __Typical examples:__ RequireJS, SystemJS
 
 Module loaders are libraries that can handle loading modules using the above formats for further processing or executing, they may be different in terms of synchronous or asynchronous loading, static or dynamic loading.
 
-# Node process managers
-
-__Typical examples:__ Forever, PM2, Strong-PM, SystemD
-
-These tools to manage your Node applications at run time; they provide high availability, automatic restart, file watcher, runtime performance and resource consumption insights, and clustering.
-
 # Process restarters
 
 __Typical examples:__ nodemon
@@ -93,6 +87,12 @@ __Typical examples:__ Chrome Developer Tools, node-inspect
 These tools allow you to inspect *running* code; in Node.js, in your browser, or both. Typically they'll support things like pausing execution, stepping through function calls manually, inspecting variables, profiling memory allocations and CPU usage, viewing execution logs, and so on.
 
 They're typically used to find tricky bugs. It's a good idea to learn how these tools work, but often it'll still be easier to find a bug by just 'dumb logging' variables throughout your code using eg. `console.log`.
+
+# Node process managers
+
+__Typical examples:__ Forever, PM2, Strong-PM, SystemD
+
+These tools to manage your Node applications at run time; they provide high availability, automatic restart, file watcher, runtime performance and resource consumption insights, and clustering.
 
 # NodeJS version manager
 
