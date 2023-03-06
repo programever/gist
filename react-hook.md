@@ -80,14 +80,14 @@ function Component3() {
 
 # useRef
 
-Allows use to persist values between renders.
+Allows us to persist values between renders.
 
 It can be used to store a mutable value that does ___not cause a re-render when updated___.
 
 ```
 function App() {
   const [inputValue, setInputValue] = useState("");
-  const count = useRef(0);
+  const count = useRef(0); // If you use `const [count, setCount] = useState(0);` you will have infinity renders
 
   useEffect(() => {
     count.current = count.current + 1;
