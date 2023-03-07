@@ -48,4 +48,4 @@ A backend framework - 100% TypeScript.
 
 ### RXjs
 
-A library for composing asynchronous and event-based programs by using observable sequences.
+A library for composing asynchronous and event-based programs by using observable sequences. A way to make React using React Programming.
