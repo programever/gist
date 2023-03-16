@@ -4,6 +4,6 @@ If you would like to provide feedback or contribute, please create an issue.
 
 # TODO:
 - Database
-- Deployment
-- Test case
+- Deployment: AWS, Google, Github, Gitlab
+- Test case: Jest, Swagger-UI
 - EST / DSL / Tokenizer / Parse
