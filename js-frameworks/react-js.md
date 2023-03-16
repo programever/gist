@@ -1,5 +1,4 @@
 
-
 # useState
 
 Allows us to track state in a function component.
@@ -12,7 +11,7 @@ const [count, setCount] = React.useState(0);
 
 # useEffect
 
-Allows us to perform side effects in your components.
+Allows us to perform side effects in our components.
 
 Checkout the below lifecycle hooks
 
@@ -241,7 +240,7 @@ const MyInput = forwardRef(function MyInput(props, ref) {
 
   useImperativeHandle(ref, () => {
     return {
-      inputFunction() {
+      childFunction() {
         inputRef.current.focus();
         setCount(count + 1);
       },
@@ -254,7 +253,7 @@ const MyInput = forwardRef(function MyInput(props, ref) {
 
 # useLayoutEffect
 
-Allows us to perform side effects in your components.
+Allows us to perform side effects in our components.
 
 `useLayoutEffect` is called before the browser paints those updates for users to see, synchronously
 
@@ -281,10 +280,10 @@ const App = () => {
   );
 };
 
-useEffect
-Click event => Browser paints first (show 0) => useEffect is run => setRandomNumber => Broswer paints second (show the new random number)
-useLayoutEffect
-Click event => useLayoutEffect is run => setRandomNumber => Broswer paints (show the new random number)
+// useEffect
+// Click event => Browser paints first (show 0) => useEffect is run => setRandomNumber => Broswer paints second (show the new random number)
+// useLayoutEffect
+// Click event => useLayoutEffect is run => setRandomNumber => Broswer paints (show the new random number)
 ```
 
 # useDeferredValue
@@ -309,15 +308,67 @@ export default function App() {
 }
 ```
 
+# useTransition
+
+Allow us to update the state without blocking the UI
+
+```
+export default function TabContainer() {
+  // In this example, isPending was not used, because we do not need to use it here
+  // Unless you want to display/do something while the transition is running
+  const [isPending, startTransition] = useTransition(); 
+  // Make sure 1 of your tab have heavy rendering which able to block UI
+  const [tab, setTab] = useState('about');
+
+  function selectTab(nextTab) {
+    startTransition(() => {
+      setTab(nextTab);      
+    });
+  }
+
+  return (
+    <>
+      <TabButton
+        isActive={tab === 'about'}
+        onClick={() => selectTab('about')}
+      >
+        About
+      </TabButton>
+      <TabButton
+        isActive={tab === 'posts'}
+        onClick={() => selectTab('posts')}
+      >
+        Posts (slow)
+      </TabButton>
+      <TabButton
+        isActive={tab === 'contact'}
+        onClick={() => selectTab('contact')}
+      >
+        Contact
+      </TabButton>
+      <hr />
+      {tab === 'about' && <AboutTab />}
+      {tab === 'posts' && <PostsTab />}
+      {tab === 'contact' && <ContactTab />}
+    </>
+  );
+}
+```
+
 # useDebugValue
 
 Allow us to add a label to a custom Hook in React DevTools.
 
+# useId
+
+Allow us to generate unique IDs.
+
 # useInsertionEffect
 
-It is a version of useEffect that fires before any DOM mutations
+It is a version of `useEffect` that fires before any DOM mutations, fired before `useLayoutEffect` also
 
-Read this https://beta.reactjs.org/reference/react/useInsertionEffect
+It is intended for CSS-in-JS libraries, such as styled-components. Eg: To insert a `style` tag to DOM.
+
 
 # Other stuff
 
