@@ -159,7 +159,7 @@ mysql\_secure\_installation
 
 echo "gem: --no-document" \>\> ~/.gemrc
 
-curl -L https://get.rvm.io | bash -s stable --auto-dotfiles --autolibs=enable --rails
+curl -L https://get.rvm.io | bash -s stable --auto-dotfiles --autolibs=enable
 
 source /Users/iker/.rvm/scripts/rvm
 
