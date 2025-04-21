@@ -1,25 +1,26 @@
 ## 📘 Why This RFC?
 
-This RFC proposes a forward-looking approach to writing safer, more maintainable, and more predictable TypeScript applications using **Type-Driven Development (TDD)** and **Functional Programming (FP)** principles.
+This RFC proposes a forward-looking approach to writing safer, more maintainable, and more reasonable TypeScript applications using **Type-Driven Development (TyDD)** and **Functional Programming (FP)** principles.
 
 We acknowledge that our **current codebase cannot adopt this approach wholesale**, due to legacy structure, time constraints, or architectural limitations. This proposal is not a call to refactor existing code but rather a suggestion for **how we build future services, tools, and modules** more effectively.
 
 This RFC works best in **full-stack environments**, where the same principles can be applied consistently—from server to web, across backend - frontend.
 
-By applying TDD and FP gradually—starting with greenfield projects, internal tools, or new isolated modules—we can:
+By applying TyDD and FP gradually—starting with greenfield projects, internal tools, or new isolated modules—we can:
 
 - Catch bugs at compile time instead of runtime.
+- Eliminate whole classes of bugs/errors such as null checks, type mismatches, and unexpected states.
 - Reduce the need for extensive unit testing.
 - Improve developer confidence during refactoring.
 - Encourage clearer domain modeling and collaboration.
 
 This RFC outlines the philosophy, benefits, and practical application of these principles—along with a real-world case study of [TS-Bedrock](#), a type-safe, full-stack architecture that guides (but doesn’t force) teams toward best practices—all built with this approach in mind.
 
-## 🧪 What is Type-Driven Development (TDD), and How Does it Help?
+## 🧪 What is Type-Driven Development (TyDD), and How Does it Help?
 
-> ⚠️ This section refers to **Type-Driven Development**, not traditional Test-Driven Development.
+> ⚠️ This section refers to **Type-Driven Development**, not Test-Driven Development.
 
-Type-Driven Development is a design-first approach where we define the **types before the implementation**. It treats the type system as the first line of defense against bugs—shifting correctness from runtime to compile time.
+Type-Driven Development is a type-first design approach where we define the **types before the implementation**. It treats the type system as the first line of defense against bugs—shifting correctness from runtime to compile time.
 
 Instead of writing tests to confirm what the code does, we **encode correctness directly into the types**, making invalid states unrepresentable.
 
@@ -50,14 +51,14 @@ _Example: `function login(email: Email, password: Password): Result<AuthError, S
 - **Types evolve with requirements**  
 As business needs change, the type system helps **track and adapt** those changes across the entire codebase.  
 
-_Example: A common design might add `isSuspended: boolean` to `User`, but this only tells us whether the user is suspended or not—nothing can be extended further in the future. Evolving this to a richer model like `suspensionStatus: { _t: 'None' } | { _t: 'Suspended'; reason: string } | { _t: 'InReview'; reviewerId: UserId }` Requirements can be extended._
+_Example: A common design might add `isSuspended: boolean` to `User`, but this only tells us whether the user is suspended or not—nothing can be extended further in the future. Evolving this to a richer model (using `union` type) like `suspensionStatus: { _t: 'None' } | { _t: 'Suspended'; reason: string } | { _t: 'InReview'; reviewerId: UserId }` Requirements can be extended._
 
 ---
 
 - **Edge cases are modeled explicitly**  
 Instead of being forgotten or handled implicitly, unusual or error states are **designed into** the system from the start.  
 
-_Example: Using `RemoteData<Error, Data>` instead of a mix of `isLoading`, `error`, and `data` booleans prevents impossible UI states like “loading: false, error: null, data: null” by modeling them as mutually exclusive._
+_Example: Using `RemoteData<Error, Data>` instead of a mix of `isLoading: boolean`, `isError: boolean`, and `isSuccess: boolean` prevents impossible UI states like “loading: true, isError: true, isSuccess: true” by modeling them as mutually exclusive using `union` types._
 
 ---
 
@@ -71,12 +72,17 @@ _Example: When adding currency to `Product`, instead of just adding `currency: '
 - **Refactor with confidence**  
 Type safety ensures that structural changes are **safe to apply**—if it compiles, it likely works.  
 
+*TODO Steven: Not sure what this example is trying to emphasize.*
+
 _Example: Suppose `User` originally had `phone: Phone`, but we never validated it as non-null when decoding the API response. Later, business rules change and require every user to have at least one phone number—so we want to refactor to `phones: NonEmptyArray<Phone>`. But because the original data shape was never trusted, we can't safely make that change. If we had enforced decoding upfront, the compiler would now let us evolve with confidence._
 
 ---
 
+
 - **Parse, don’t validate**  
 On the frontend, each form field should act as a parser—not just a string with a validation flag. Instead of validating manually with `boolean` checks, we model each field as a structured value that either contains an error or a usable result.
+
+*TODO Steven: This might be too advanced for the audience. We can remove it or simplify it.*
 
 _Example: Instead of `email: string`, we use `email: Field<EmailError, Email>`. Traditional validation returns a `boolean`, which tells us whether something is valid—but gives us no usable data. Parsing returns a `Result<EmailError, Email>`, which either provides an error to display or a typed value we can safely pass upstream._
 
@@ -93,6 +99,10 @@ _- From the reviewer’s perspective, the signature communicates the full contra
 
 - **Fewer tests required**  
 Well-designed types remove the need for many low-value unit tests that merely confirm type shape or control flow.  
+
+*TODO Steven: Perhaps change this switch cases to demostrate how all edge cases are enforced? 
+The "Relationship with Testing" section can cover this case
+*
 
 _Example: A legacy codebase might include tests like “should return a default if name is missing.” But with well-modeled types—such as `name: Maybe<NonEmptyString>`—the absence of a name becomes an explicit case you must handle. Since the type enforces this possibility at compile time, there’s no need for defensive tests that merely confirm null-checking logic._
 
@@ -112,11 +122,11 @@ Type-Driven Development doesn’t eliminate tests—it **shifts their focus**:
 
 This approach is particularly effective when combined with Functional Programming, which we’ll explore in the next section.
 
-## 🧠 What is Functional Programming (FP), and Why Does it Work Well with TDD?
+## 🧠 What is Functional Programming (FP), and Why Does it Work Well with TyDD?
 
 FP is a paradigm that emphasizes **predictable behavior**, **explicit state**, and **compositional logic**. It encourages writing small, pure functions that are easy to reason about and free from hidden side effects.
 
-**FP and TDD reinforce each other**: FP ensures that data and behavior are predictable, while TDD enforces those guarantees at compile time. Together, they create powerful feedback loops that drive confidence, clarity, and long-term maintainability.
+**FP and TyDD reinforce each other**: FP ensures that data and behavior are predictable, while TyDD enforces those guarantees at compile time. Together, they create powerful feedback loops that drive confidence, clarity, and long-term maintainability.
 
 ### 🔧 Core FP Principles
 
@@ -125,15 +135,15 @@ FP is a paradigm that emphasizes **predictable behavior**, **explicit state**, a
 - **Algebraic Data Types (ADTs)**: Types like `Maybe`, `Result`, and tagged unions help represent possible states and make edge cases explicit.
 - **Composition**: Small functions are combined into larger behavior through composition, reducing complexity and duplication.
 - **First-class types**: Data modeling and function signatures reflect domain logic directly—enabling strong compiler guarantees.
-- **Out of scope**: Advanced patterns like Type Classes are not discussed in this RFC to keep the focus practical and accessible.
+- **Out of scope**: Advanced patterns like Type Classes are not discussed in this RFC to keep the focus practical and accessible. (TODO Steven I think we can remove this since JS also don't support)
 
-### 🤝 Why FP Fits TDD Perfectly
+### 🤝 Why FP Fits TyDD Perfectly
 
-- **Shared focus on types**: Both FP and TDD treat types as first-class citizens, using them to encode business rules and prevent invalid states by design.
-- **Explicit control flow**: FP uses ADTs like `Result` and `Maybe` to make success/failure paths unmissable—exactly what TDD needs to shift correctness to compile time.
-- **Composable logic**: TDD thrives when logic is isolated and predictable. FP encourages composition of pure, focused functions that are easy to reason about and test.
+- **Shared focus on types**: Both FP and TyDD treat types as first-class citizens, using them to encode business rules and prevent invalid states by design.
+- **Explicit control flow**: FP uses ADTs like `Result` and `Maybe` to make success/failure paths unmissable—exactly what TyDD needs to shift correctness to compile time.
+- **Composable logic**: TyDD thrives when logic is isolated and predictable. FP encourages composition of pure, focused functions that are easy to reason about and test.
 - **No hidden behavior**: FP discourages mutation and side effects, making type-driven guarantees more trustworthy and reliable.
-- **Type-safe boundaries**: FP’s emphasis on keeping effects and I/O at the edge reinforces the TDD pattern of “parse first, trust later.”
+- **Type-safe boundaries**: FP’s emphasis on keeping effects and I/O at the edge reinforces the TyDD pattern of “parse first, trust later.”
 
 ### ✅ Example
 ```ts
@@ -268,9 +278,12 @@ export type Opaque<T, K extends symbol, Unwrapped = T> = {
 }
 type Email = Opaque<string, typeof unique symbol>
 type JWTToken = Opaque<string, typeof unique symbol>
+
+export function createEmail(rawEmail: String): Email | null 
+export function createJWTToken(): Promise<JWTToken>
 ```
--   Raw strings can’t sneak in
--   Only validated values pass through    
+-   Enforces developer to ALWAYS validate Email or ONLY create JWTToken from one place
+-   An Opaque type can't be changed by another developer
 -   Domain modeling at compile time
 
 👉 "If it's not validated, it's not an `Email`"
@@ -349,16 +362,16 @@ Here are the 9 most important enablers:
 ### 5. ⛔ Never Return Raw Promises
 
 -   Don’t use `Promise<T>` in business logic
--   Use `Task<E, A> = Promise<Result<E, A>>` instead
--   Every async function must return a `Result` so failures are handled structurally
+-   Use `type Task<E, A> = Promise<Result<E, A>>` instead
+-   Every async function (that can fail) must return a `Result` so failures are handled structurally
 
 ----------
 
 ### 6. 🧪 Parse Before You Trust (Decoders Everywhere)
 
--   Parse all input: form data, API response, URL params, config, etc.
+-   Parse at all data boundaries, eg. form data from user, API response from server, URL params from browser, Env from server, etc.
 -   Use `decoders`, `zod` or a custom parser
--   Never operate on unvalidated input
+-   Never operate on unknown and unvalidated input
 
 ----------
 
@@ -373,6 +386,8 @@ Here are the 9 most important enablers:
 ----------
 
 ### 8. 🔁 Keep Effects at the Edge
+
+* TODO Steven: I think this is a bit too advanced for the audience. We can remove it or simplify it.*
 
 -   Side effects (fetch, DB, etc.) should only happen in `Task<E, A>` layers
 -   Core logic must be pure and testable
@@ -390,6 +405,11 @@ Here are the 9 most important enablers:
 
 
 ## 🧱 Case Study: TS-Bedrock
+
+* TODO Steven: I am not too sure if this is necessary. It's a lot to digest. 
+Maybe we should just provide more code examples above instead of diving into TS-Bedrock
+*
+
 
 **TS-Bedrock** is an isomorphic architecture organized into three dedicated repositories:
 - **Core**: The central repository defining all shared types and API contracts.
