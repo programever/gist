@@ -35,48 +35,56 @@ Instead of writing tests to confirm what the code does, we **encode correctness 
 
 - **Types describe business logic**  
 Types don’t just shape data—they express the **intent** and rules of your domain, making your code easier to reason about.  
+
 _Example: `type Email = string & { readonly brand: unique symbol }` makes it clear this is not just any string—it must be validated as an email. This approach is even better with a Generic Opaque Type Opaque<string, typeof emailUniqueSymbol>_
 
 ---
 
 - **Function contracts become clear**  
 Typed function signatures clearly communicate expectations and outcomes—both to the implementer and future reviewers.  
+
 _Example: `function login(email: Email, password: Password): Result<AuthError, Session>` makes the success and failure paths explicit—the caller is required to handle both, leading to clearer, safer control flow._
 
 ---
 
 - **Types evolve with requirements**  
 As business needs change, the type system helps **track and adapt** those changes across the entire codebase.  
+
 _Example: A common design might add `isSuspended: boolean` to `User`, but this only tells us whether the user is suspended or not—nothing can be extended further in the future. Evolving this to a richer model like `suspensionStatus: { _t: 'None' } | { _t: 'Suspended'; reason: string } | { _t: 'InReview'; reviewerId: UserId }` Requirements can be extended._
 
 ---
 
 - **Edge cases are modeled explicitly**  
 Instead of being forgotten or handled implicitly, unusual or error states are **designed into** the system from the start.  
+
 _Example: Using `RemoteData<Error, Data>` instead of a mix of `isLoading`, `error`, and `data` booleans prevents impossible UI states like “loading: false, error: null, data: null” by modeling them as mutually exclusive._
 
 ---
 
 - **Immediate feedback loop**  
 Type errors are surfaced **at development time**, enabling faster iteration without waiting for runtime or test failures.  
+
 _Example: When adding currency to `Product`, instead of just adding `currency: 'USD' | 'EUR'`, we replace `price: number` with `pricing: { amount: number; currency: 'USD' | 'EUR' }`. This forces the compiler to flag every usage of `price`, giving us a tight feedback loop to safely update the entire codebase._
 
 ---
 
 - **Refactor with confidence**  
 Type safety ensures that structural changes are **safe to apply**—if it compiles, it likely works.  
+
 _Example: Suppose `User` originally had `phone: Phone`, but we never validated it as non-null when decoding the API response. Later, business rules change and require every user to have at least one phone number—so we want to refactor to `phones: NonEmptyArray<Phone>`. But because the original data shape was never trusted, we can't safely make that change. If we had enforced decoding upfront, the compiler would now let us evolve with confidence._
 
 ---
 
 - **Parse, don’t validate**  
 On the frontend, each form field should act as a parser—not just a string with a validation flag. Instead of validating manually with `boolean` checks, we model each field as a structured value that either contains an error or a usable result.
+
 _Example: Instead of `email: string`, we use `email: Field<EmailError, Email>`. Traditional validation returns a `boolean`, which tells us whether something is valid—but gives us no usable data. Parsing returns a `Result<EmailError, Email>`, which either provides an error to display or a typed value we can safely pass upstream._
 
 ---
 
 - **Better developer experience**  
 Type-Driven Development improves how developers write, review, and collaborate around code. Types encode the business rules directly—so developers don’t have to reverse-engineer intent from implementation.
+
 _Example: `function placeOrder(cart: NonEmptyArray<Item>, user: AuthenticatedUser): Result<OutOfStock | PaymentDeclined, OrderConfirmation>`_
 _- From the writer’s perspective, the function signature makes it clear what needs to be handled: only authenticated users can place orders, carts must not be empty, and the function must account for both out-of-stock and payment failure scenarios._
 _- From the reviewer’s perspective, the signature communicates the full contract: what’s required, what can go wrong, and what success looks like—without reading the implementation. Review becomes focused on logic and correctness, not guesswork._
@@ -85,12 +93,14 @@ _- From the reviewer’s perspective, the signature communicates the full contra
 
 - **Fewer tests required**  
 Well-designed types remove the need for many low-value unit tests that merely confirm type shape or control flow.  
+
 _Example: A legacy codebase might include tests like “should return a default if name is missing.” But with well-modeled types—such as `name: Maybe<NonEmptyString>`—the absence of a name becomes an explicit case you must handle. Since the type enforces this possibility at compile time, there’s no need for defensive tests that merely confirm null-checking logic._
 
 ---
 
 - **Higher trust in the system**  
 With logic and correctness encoded in the type system, your codebase becomes **self-validating and more resilient** over time.  
+
 _Example: When onboarding a new developer, they can confidently work with `User`, `Session`, or `Order` types without reading every implementation detail—because the domain logic is captured in the type structure itself. This builds trust across the team: if the types align, the code aligns._
 
 ### 🤝 Relationship with Testing
