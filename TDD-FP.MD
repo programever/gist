@@ -14,7 +14,7 @@ By applying TyDD and FP gradually—starting with greenfield projects, internal 
 - Improve developer confidence during refactoring.
 - Encourage clearer domain modeling and collaboration.
 
-This RFC outlines the philosophy, benefits, and practical application of these principles—along with a real-world case study of [TS-Bedrock](#), a type-safe, full-stack architecture that guides (but doesn’t force) teams toward best practices—all built with this approach in mind.
+This RFC outlines the philosophy, benefits, and practical application of these principles—along with a real-world case study of [TS-Bedrock](https://github.com/programever/ts-bedrock-example), a type-safe, full-stack architecture that guides **(but doesn’t force)** teams toward best practices—all built with this approach in mind.
 
 ## 🧪 What is Type-Driven Development (TyDD), and How Does it Help?
 
@@ -72,17 +72,12 @@ _Example: When adding currency to `Product`, instead of just adding `currency: '
 - **Refactor with confidence**  
 Type safety ensures that structural changes are **safe to apply**—if it compiles, it likely works.  
 
-*TODO Steven: Not sure what this example is trying to emphasize.*
-
-_Example: Suppose `User` originally had `phone: Phone`, but we never validated it as non-null when decoding the API response. Later, business rules change and require every user to have at least one phone number—so we want to refactor to `phones: NonEmptyArray<Phone>`. But because the original data shape was never trusted, we can't safely make that change. If we had enforced decoding upfront, the compiler would now let us evolve with confidence._
+_Example: Suppose `User` originally had `phone: Phone`, but we never decode it in the API response. Later, business rules change and require every user to have multiple phones but at least one phone number—so we want to refactor to `phones: NonEmptyArray<Phone>`. But because the original data shape was never trusted, we can't safely make that change. If we had enforced decoding upfront, the compiler would now let us evolve with confidence._
 
 ---
 
-
 - **Parse, don’t validate**  
 On the frontend, each form field should act as a parser—not just a string with a validation flag. Instead of validating manually with `boolean` checks, we model each field as a structured value that either contains an error or a usable result.
-
-*TODO Steven: This might be too advanced for the audience. We can remove it or simplify it.*
 
 _Example: Instead of `email: string`, we use `email: Field<EmailError, Email>`. Traditional validation returns a `boolean`, which tells us whether something is valid—but gives us no usable data. Parsing returns a `Result<EmailError, Email>`, which either provides an error to display or a typed value we can safely pass upstream._
 
@@ -94,17 +89,6 @@ Type-Driven Development improves how developers write, review, and collaborate a
 _Example: `function placeOrder(cart: NonEmptyArray<Item>, user: AuthenticatedUser): Result<OutOfStock | PaymentDeclined, OrderConfirmation>`_
 _- From the writer’s perspective, the function signature makes it clear what needs to be handled: only authenticated users can place orders, carts must not be empty, and the function must account for both out-of-stock and payment failure scenarios._
 _- From the reviewer’s perspective, the signature communicates the full contract: what’s required, what can go wrong, and what success looks like—without reading the implementation. Review becomes focused on logic and correctness, not guesswork._
-
----
-
-- **Fewer tests required**  
-Well-designed types remove the need for many low-value unit tests that merely confirm type shape or control flow.  
-
-*TODO Steven: Perhaps change this switch cases to demostrate how all edge cases are enforced? 
-The "Relationship with Testing" section can cover this case
-*
-
-_Example: A legacy codebase might include tests like “should return a default if name is missing.” But with well-modeled types—such as `name: Maybe<NonEmptyString>`—the absence of a name becomes an explicit case you must handle. Since the type enforces this possibility at compile time, there’s no need for defensive tests that merely confirm null-checking logic._
 
 ---
 
@@ -122,6 +106,54 @@ Type-Driven Development doesn’t eliminate tests—it **shifts their focus**:
 
 This approach is particularly effective when combined with Functional Programming, which we’ll explore in the next section.
 
+### ✅ Example
+```ts
+type FormState =
+  | { _t: "Idle" }
+  | { _t: "Submitting" }
+  | { _t: "Success"; data: string }
+  | { _t: "Error"; error: Error }
+
+function getMessage(state: FormState): string {
+  switch (state.tag) {
+    case "Idle":
+      return "Fill out the form.";
+    case "Submitting":
+      return "Submitting...";
+    case "Success":
+      return `Success with data: ${state.data}`;
+    case "Error":
+      return `Error: ${state.error.message}`;
+    // ❌ No default case needed
+  }
+}
+// ✅ No runtime test is needed to check that "Idle", "Submitting", "Success", and "Error" are all covered.
+// ✅ If a new case is added (e.g. { _t: "Cancelled" }), the compiler will force you to handle it.
+// ✅ This reduces the need for fragile, repetitive tests and shifts that responsibility to the type system.
+
+type USAddress = {
+  country: "US"
+  state: string // Required for US addresses
+  zip: string
+}
+
+type InternationalAddress = {
+  country: Exclude<string, "US">
+  zip: string
+}
+
+type Address = USAddress | InternationalAddress
+
+function formatAddress(address: Address): string {
+  return address.country === "US"
+    ? `${address.state}, ${address.zip}, USA`
+    : `${address.zip}, ${address.country}`
+}
+// ✅ No need to write a test for “What if US address has no state?” — it's impossible to construct.
+// ✅ No need to test invalid cases like { country: 'US' } with missing state — won't compile.
+// ✅ You encode the business rule at the type level, not in if-statements or validations.
+```
+
 ## 🧠 What is Functional Programming (FP), and Why Does it Work Well with TyDD?
 
 FP is a paradigm that emphasizes **predictable behavior**, **explicit state**, and **compositional logic**. It encourages writing small, pure functions that are easy to reason about and free from hidden side effects.
@@ -135,7 +167,6 @@ FP is a paradigm that emphasizes **predictable behavior**, **explicit state**, a
 - **Algebraic Data Types (ADTs)**: Types like `Maybe`, `Result`, and tagged unions help represent possible states and make edge cases explicit.
 - **Composition**: Small functions are combined into larger behavior through composition, reducing complexity and duplication.
 - **First-class types**: Data modeling and function signatures reflect domain logic directly—enabling strong compiler guarantees.
-- **Out of scope**: Advanced patterns like Type Classes are not discussed in this RFC to keep the focus practical and accessible. (TODO Steven I think we can remove this since JS also don't support)
 
 ### 🤝 Why FP Fits TyDD Perfectly
 
@@ -148,98 +179,82 @@ FP is a paradigm that emphasizes **predictable behavior**, **explicit state**, a
 ### ✅ Example
 ```ts
 // Core types
-type Result<E, A> = { _t: "Ok"; value: A } | { _t: "Err"; error: E }
+type Result<E, A> = { _t: 'Ok'; value: A } | { _t: 'Err'; error: E };
 
 const Result = {
-  ok: <A>(value: A): Result<never, A> => ({ _t: "Ok", value }),
-  err: <E>(error: E): Result<E, never> => ({ _t: "Err", error }),
-}
+  ok: <A>(value: A): Result<never, A> => ({ _t: 'Ok', value }),
+  err: <E>(error: E): Result<E, never> => ({ _t: 'Err', error }),
+};
 
-type Task<E, A> = Promise<Result<E, A>>
+type Task<E, A> = Promise<Result<E, A>>;
 
-type Opaque<T> = T // Should be properly defined in the real code, but not for this example
+type Opaque<T> = T; // Should be properly defined in the real code, but not for this example
 
-type PositiveInteger = Opaque<number>
+type PositiveInt = Opaque<number>;
 
 // App types
 
-type UserID = PositiveInt
-type Email = Opaque<string>
-type Password = Opaque<string>
-type JWTToken = Opaque<string>
+type UserID = PositiveInt;
+type Email = Opaque<string>;
+type Password = Opaque<string>;
+type JWTToken = Opaque<string>;
 
-type SignupParams = { email: string; password: string }
-type ParsedParams = { email: Email; passwordHash: Password }
-type User = { id: UserID; email: Email }
-type UserWithJWT = User & { token: JWTToken }
+type SignupParams = { email: string; password: string };
+type ParsedParams = { email: Email; passwordHash: Password };
+type User = { id: UserID; email: Email };
+type UserWithJWT = User & { token: JWTToken };
 
-type ParamsParserError = { _t: "ParamsParserError"; message: string }
-type EmailTakenError = { _t: "EmailTakenError" }
-type DbError = { _t: "DbError"; reason: string }
-type JWTError = { _t: "JWTError"; reason: string }
-type MailingError = { _t: "MailingError"; reason: string }
+type ParamsParserError = { _t: 'ParamsParserError'; message: string };
+type EmailError = { _t: 'EmailTakenError' };
+type DbError = { _t: 'DbError'; reason: string };
+type JWTError = { _t: 'JWTError'; reason: string };
+type MailingError = { _t: 'MailingError'; reason: string };
 
-type SignupError =
-  | ParamsParserError
-  | EmailTakenError
-  | DbError
-  | JWTError
-  | MailingError
+type SignupError = ParamsParserError | EmailError | DbError | JWTError | MailingError;
 
 // App logics
-function parseSignupInput(
-  params: SignupParams,
-): Result<ParamsParserError, ParsedParams> {
-  if (!params.email.includes("@")) {
-    return Result.err({ _t: "ParamsParserError", message: "Invalid email" })
+function parseSignupInput(params: SignupParams): Result<ParamsParserError, ParsedParams> {
+  if (!params.email.includes('@')) {
+    return Result.err({ _t: 'ParamsParserError', message: 'Invalid email' });
   }
   return Result.ok({
     email: params.email,
-    passwordHash: "hashed-" + params.password,
-  })
+    passwordHash: 'hashed-' + params.password,
+  });
 }
 
-function checkEmailUnique(
-  params: ParsedParams,
-): Task<EmailTakenError, ParsedParams> {
-  return params.email === "taken@example.com"
-    ? Promise.resolve(
-        Result.err({ _t: "EmailTakenError", email: params.email }),
-      )
-    : Promise.resolve(Result.ok(params))
+async function checkEmailUnique(params: ParsedParams): Task<EmailError, ParsedParams> {
+  return params.email === 'taken@example.com'
+    ? Result.err({ _t: 'EmailTakenError', email: params.email })
+    : Result.ok(params);
 }
 
 async function saveUser(params: ParsedParams): Task<DbError, User> {
-  return Promise.resolve(Result.ok({ id: 123, email: params.email }))
+  return Result.ok({ id: 123, email: params.email });
 }
 
 function generateJWT(user: User): Result<JWTError, UserWithJWT> {
-  return Result.ok({ ...user, token: "jwt-token" })
+  return Result.ok({ ...user, token: 'jwt-token' });
 }
 
 async function sendWelcomeEmail(user: User): Task<MailingError, User> {
-  return Promise.resolve(Result.ok(user))
+  return Result.ok(user);
 }
 
 // App handlers
-async function signupEmail(
-  params: SignupParams,
-): Task<SignupError, UserWithJWT> {
-  const parsed = parseSignupInput(params)
-  if (parsed._t === "Err") return parsed
+async function signupEmail(params: SignupParams): Task<SignupError, UserWithJWT> {
+  const parsed = parseSignupInput(params);
+  if (parsed._t === 'Err') return parsed;
 
-  const unique = await checkEmailUnique(parsed.value)
-  if (unique._t === "Err") return unique
+  const unique = await checkEmailUnique(parsed.value);
+  if (unique._t === 'Err') return unique;
 
-  const user = await saveUser(unique.value)
-  if (user._t === "Err") return user
+  const user = await saveUser(unique.value);
+  if (user._t === 'Err') return user;
 
-  const [userWithJWT, _] = await Promise.all([
-    generateJWT(user.value),
-    sendWelcomeEmail(user.value),
-  ])
+  const [userWithJWT, _] = await Promise.all([generateJWT(user.value), sendWelcomeEmail(user.value)]);
 
-  return userWithJWT
+  return userWithJWT;
 }
 ```
 ### 🎓 Slide Summary: What This Signup Example Shows
@@ -247,7 +262,6 @@ async function signupEmail(
 ```ts
 type Result<E, A> = { _t: "Ok"; value: A } | { _t: "Err"; error: E }
 ```
--   No try/catch
 -   No null/undefined
 -   No surprises
     
@@ -279,11 +293,11 @@ export type Opaque<T, K extends symbol, Unwrapped = T> = {
 type Email = Opaque<string, typeof unique symbol>
 type JWTToken = Opaque<string, typeof unique symbol>
 
-export function createEmail(rawEmail: String): Email | null 
-export function createJWTToken(): Promise<JWTToken>
+export function createEmail(rawEmail: String): Result<EmailError, Email>
+export async function createJWTToken(): Task<JWTError, JWTToken>
 ```
 -   Enforces developer to ALWAYS validate Email or ONLY create JWTToken from one place
--   An Opaque type can't be changed by another developer
+-   An Opaque type can't be changed by another module/file, it only can be created/changed at one place
 -   Domain modeling at compile time
 
 👉 "If it's not validated, it's not an `Email`"
@@ -333,7 +347,7 @@ Here are the 9 most important enablers:
 
 ### 2. 🚫 Ban `any`, `is`, `as`, and `!`
 -   These escape hatches disable type safety
--   Use decoders, opaque types, and Result/Option instead
+-   Use decoders, opaque types, and Result/Maybe instead
 -   If you must assert, isolate it to boundary parsing and document clearly
 
 ----------
@@ -375,7 +389,7 @@ Here are the 9 most important enablers:
 
 ----------
 
-### 7. 🎯 Model Failures and Options as Types
+### 7. 🎯 Model Failures and Maybe as Types
 
 -   No more `null`, `undefined`, or `boolean isError`
 -   Use:
@@ -387,10 +401,9 @@ Here are the 9 most important enablers:
 
 ### 8. 🔁 Keep Effects at the Edge
 
-* TODO Steven: I think this is a bit too advanced for the audience. We can remove it or simplify it.*
-
--   Side effects (fetch, DB, etc.) should only happen in `Task<E, A>` layers
--   Core logic must be pure and testable
+-   Code that touches the outside world (fetch, DB, file system, etc.) should be isolated.
+-   Your core logic should stay **pure**: no side effects, just input → output.
+-   This makes your core logic easy to test and reuse.
 
 ----------
 
@@ -405,11 +418,6 @@ Here are the 9 most important enablers:
 
 
 ## 🧱 Case Study: TS-Bedrock
-
-* TODO Steven: I am not too sure if this is necessary. It's a lot to digest. 
-Maybe we should just provide more code examples above instead of diving into TS-Bedrock
-*
-
 
 **TS-Bedrock** is an isomorphic architecture organized into three dedicated repositories:
 - **Core**: The central repository defining all shared types and API contracts.
